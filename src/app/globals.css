@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+  --animate-slide-in: slideIn 0.2s ease-out forwards;
+  --keyframes-slideIn: {
+    from {
+      transform: scale(0.9);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  };
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.item-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.checked {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.tab-active {
+  color: #10b981;
+  border-bottom: 2px solid #10b981;
+}
+
+.modal-overlay {
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+}
