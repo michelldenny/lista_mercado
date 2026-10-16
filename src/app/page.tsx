@@ -7,7 +7,6 @@ import ShoppingItemRow from "@/components/ShoppingItemRow";
 
 export default function Home() {
   const {
-    user,
     lists,
     currentListId,
     setCurrentListId,
@@ -21,6 +20,8 @@ export default function Home() {
     renameList,
   } = useShoppingLists();
 
+  const [filter, setFilter] = useState<"all" | "pending" | "done">("all");
+  const [search, setSearch] = useState("");
   const [currentTab, setCurrentTab] = useState<"list" | "table">("list");
   const [isManagerOpen, setIsManagerOpen] = useState(false);
   const [isRenameOpen, setIsRenameOpen] = useState(false);
@@ -124,6 +125,10 @@ export default function Home() {
     return a.name.localeCompare(b.name, 'pt-PT');
   });
   
+  const completed = items.filter(i => i.checked).length;
+  const progress = items.length ? Math.round(completed / items.length * 100) : 0;
+  const visibleItems = sortedItems.filter(i => (filter === "all" || (filter === "done" ? i.checked : !i.checked)) && i.name.toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR")));
+  const money = (value: number) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   const grandTotal = items.reduce((acc, i) => i.checked ? acc + ((i.price || 0) * (i.quantity || 1)) : acc, 0);
 
   // Actions
@@ -197,41 +202,41 @@ export default function Home() {
   return (
     <>
       {toastMessage && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl font-bold text-sm transition-all duration-300 animate-slide-in bg-red-600 text-white">
+        <div role="status" className="fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl font-bold text-sm transition-all duration-300 animate-slide-in bg-red-600 text-white">
           {toastMessage}
         </div>
       )}
 
-      <div className="max-w-2xl mx-auto px-4 py-6 transition-opacity duration-500">
-        <header className="flex justify-between items-center mb-6">
-          <div className="flex-1 overflow-hidden pr-4">
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight">SmartList Pro</h1>
-            <p className="text-emerald-600 font-bold text-sm italic truncate">
-              {currentList ? `${currentList.name} ${currentList.isMother ? '(Lista Mãe)' : ''}` : 'Conectado...'}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={() => setIsChatOpen(true)} className="bg-emerald-50 border border-emerald-200 text-emerald-600 p-3 rounded-2xl shadow-sm hover:bg-emerald-100 transition-all hover:scale-105 active:scale-95 shrink-0 flex items-center gap-2">
-              <span className="text-xl">✨</span> <span className="font-bold text-sm hidden sm:block">IA</span>
-            </button>
-            <button onClick={() => setIsManagerOpen(true)} className="bg-white border border-slate-200 p-3 rounded-2xl shadow-sm hover:bg-slate-50 transition-all hover:scale-105 active:scale-95 shrink-0">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-slate-700"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            </button>
-          </div>
+      <aside className="app-sidebar">
+        <a className="brand" href="/" aria-label="SmartList, início"><span className="brand-icon">✓</span><span>smartlist<span className="brand-dot">.</span></span></a>
+        <div className="sidebar-caption">SEU DIA MAIS LEVE</div>
+        <button className="sidebar-heading" onClick={() => setIsManagerOpen(true)}><span>Minhas listas</span><span>＋</span></button>
+        <nav aria-label="Listas de compras" className="list-navigation">{lists.map(list => <button key={list.id} onClick={() => setCurrentListId(list.id)} className={list.id === currentListId ? 'nav-list active' : 'nav-list'}><span className="nav-list-icon">{list.isMother ? '☆' : '☷'}</span><span>{list.name}</span><small>{list.items.length}</small></button>)}</nav>
+        <button className="new-list-button" onClick={() => setIsManagerOpen(true)}>＋ Criar ou gerenciar listas</button>
+        <div className="sidebar-tip"><span>✧</span><strong>Menos esforço.<br />Mais organização.</strong><p>Use sua lista mãe como ponto de partida para a próxima compra.</p></div>
+        <div className="sidebar-footer"><span className="connection-dot" /> Conectado à sua lista</div>
+      </aside>
+      <div className="workspace">
+      <div className="workspace-topbar"><span>Meu espaço <span className="breadcrumb">/ &nbsp; Lista de compras</span></span><span className="topbar-badge">Uma compra de cada vez</span></div>
+      <div className="main-content">
+        <header className="page-heading">
+          <div><p className="eyebrow">TUDO PRONTO PARA A PRÓXIMA COMPRA</p><h1>{currentList?.name || 'Minha lista'}<span className="heading-dot">.</span></h1><p className="page-subtitle">Organize o que precisa. Acompanhe o que já está no carrinho.</p></div>
+          <div className="heading-actions"><button className="manage-button" onClick={() => setIsManagerOpen(true)}>☷ <span>Minhas listas</span></button><button className="assistant-button" onClick={() => setIsChatOpen(true)}>✧ <span>Assistente IA</span></button></div>
         </header>
-
-        <div className="flex border-b border-slate-200 mb-8 sticky top-0 bg-slate-50/90 backdrop-blur-md z-40">
-          <button onClick={() => setCurrentTab('list')} className={`flex-1 py-4 text-sm font-black transition-all uppercase tracking-widest ${currentTab === 'list' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-slate-400'}`}>Lista</button>
-          <button onClick={() => setCurrentTab('table')} className={`flex-1 py-4 text-sm font-black transition-all uppercase tracking-widest ${currentTab === 'table' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-slate-400'}`}>Planilha</button>
-        </div>
-
+        <section className="overview" aria-label="Resumo da compra">
+          <div className="overview-card"><span className="stat-icon">☷</span><div><p>Itens na lista</p><strong>{items.length.toString().padStart(2, '0')}</strong><small>{items.length - completed} para colocar no carrinho</small></div></div>
+          <div className="overview-card"><span className="stat-icon mint">✓</span><div><p>Já no carrinho</p><strong>{completed.toString().padStart(2, '0')} <em>de {items.length}</em></strong><div className="progress-track" role="progressbar" aria-label="Progresso da compra" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><span style={{width: progress + '%'}} /></div></div><small className="progress-number">{progress}%</small></div>
+          <div className="overview-card total-card"><span className="stat-icon">R$</span><div><p>Total no carrinho</p><strong>{money(grandTotal)}</strong><small>Somente os itens marcados</small></div></div>
+        </section>
+        <section className="shopping-panel">
+        <div className="panel-heading"><div><h2>Sua lista de compras</h2><p>Um check a cada item. Simples assim.</p></div><div className="view-switch" aria-label="Visualização"><button aria-pressed={currentTab === 'list'} onClick={() => setCurrentTab('list')}>☷ Lista</button><button aria-pressed={currentTab === 'table'} onClick={() => setCurrentTab('table')}>▦ Planilha</button></div></div>
         {currentTab === 'list' && (
           <div>
-            <div className="flex gap-2 mb-8">
+            <div className="add-item-bar flex gap-2 mb-8">
               <div className="flex-1 bg-white rounded-[1.5rem] shadow-sm border border-slate-200 p-2">
                 <form onSubmit={handleAddItem} className="flex gap-2">
-                  <input type="text" value={itemInput} onChange={(e) => setItemInput(e.target.value)} placeholder="Adicionar novo item..." className="flex-1 border-none focus:ring-0 px-4 py-2.5 text-slate-700 font-medium outline-none bg-transparent placeholder:text-slate-300" />
-                  <button type="submit" className="bg-emerald-500 text-white p-3 rounded-2xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100 active:scale-90">
+                  <input type="text" value={itemInput} onChange={(e) => setItemInput(e.target.value)} aria-label="Nome do novo item" placeholder="O que está faltando em casa?" className="flex-1 border-none focus:ring-0 px-4 py-2.5 text-slate-700 font-medium outline-none bg-transparent placeholder:text-slate-300" />
+                  <button type="submit" aria-label="Adicionar item" disabled={!currentList || !itemInput.trim()} className="bg-emerald-500 text-white p-3 rounded-2xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100 active:scale-90">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                   </button>
                 </form>
@@ -247,8 +252,11 @@ export default function Home() {
               </button>
             </div>
             
-            <div className="space-y-4">
-              {sortedItems.map(item => (
+            <div className="filter-bar"><div className="filter-buttons">{([['all', 'Todos'], ['pending', 'Pendentes'], ['done', 'No carrinho']] as const).map(([value, label]) => <button key={value} aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}<span>{value === 'all' ? items.length : value === 'pending' ? items.length - completed : completed}</span></button>)}</div><input aria-label="Buscar na lista" placeholder="Buscar um item…" value={search} onChange={e => setSearch(e.target.value)} /></div>
+            <div className="items-heading"><span>PRODUTO</span><span>DETALHES DA COMPRA</span></div>
+            <div className="items-list space-y-4">
+              {visibleItems.length === 0 && <div className="empty-state"><span>☷</span><h3>{items.length ? 'Nenhum item por aqui' : 'Toda boa compra começa com uma lista'}</h3><p>{items.length ? 'Tente outra busca ou mude o filtro.' : 'Adicione seu primeiro produto no campo acima.'}</p></div>}
+              {visibleItems.map(item => (
                 <ShoppingItemRow
                   key={item.id}
                   item={item}
@@ -290,13 +298,16 @@ export default function Home() {
             </div>
           </div>
         )}
+        </section>
+        <p className="page-footnote">Feito para simplificar suas compras, do planejamento ao último item.</p>
+      </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-6 shadow-[0_-15px_40px_-10px_rgba(0,0,0,0.1)] z-50">
+      <div className="cart-footer fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-6 shadow-[0_-15px_40px_-10px_rgba(0,0,0,0.1)] z-50">
         <div className="max-w-2xl mx-auto flex justify-between items-center">
           <div>
             <p className="text-[10px] text-slate-400 uppercase font-black tracking-[0.25em] mb-1">Total no Carrinho</p>
-            <p className="text-4xl font-black text-slate-800 tabular-nums">R$ {grandTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+            <p className="text-4xl font-black text-slate-800 tabular-nums">R$ {grandTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
           </div>
           <button onClick={() => { if (confirm("Esvaziar esta lista inteira?")) updateCurrentListItems([]) }} className="text-xs font-black text-red-400 px-6 py-4 hover:bg-red-50 rounded-[1.2rem] transition-colors border-2 border-transparent hover:border-red-100 uppercase tracking-widest">Esvaziar</button>
         </div>

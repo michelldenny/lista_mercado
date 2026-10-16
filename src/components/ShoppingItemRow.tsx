@@ -41,12 +41,14 @@ export default function ShoppingItemRow({
 
   return (
     <div
-      className={`item-card p-4 rounded-2xl border flex flex-col gap-3 ${
+      className={`item-card ${item.checked ? "is-checked" : ""} p-4 rounded-2xl border flex flex-col gap-3 ${
         item.checked ? "bg-slate-50 border-slate-200" : "bg-white border-slate-200 shadow-sm"
       }`}
     >
       <div className="flex items-center gap-3">
         <button
+          aria-label={`${item.checked ? "Desmarcar" : "Marcar"} ${item.name}`}
+          aria-pressed={item.checked}
           onClick={() => handleToggleItem(item.id)}
           className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${
             item.checked ? "bg-emerald-500 border-emerald-500 text-white" : "border-slate-300"
@@ -64,6 +66,7 @@ export default function ShoppingItemRow({
           </p>
           <input
             type="text"
+            aria-label={`Embalagem de ${item.name}`}
             value={localFormat}
             onChange={(e) => setLocalFormat(e.target.value)}
             onBlur={() => saveField("format", localFormat)}
@@ -71,20 +74,20 @@ export default function ShoppingItemRow({
             className="text-[10px] bg-transparent border-none p-0 outline-none text-slate-400 w-full font-bold uppercase placeholder:text-slate-200"
           />
         </div>
-        <button onClick={() => handleRemoveItem(item.id)} className="text-slate-300 hover:text-red-400 p-1">
+        <button aria-label={`Remover ${item.name}`} onClick={() => handleRemoveItem(item.id)} className="text-slate-300 hover:text-red-400 p-1">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="3 6 5 6 21 6"></polyline>
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           </svg>
         </button>
       </div>
-      {item.checked && (
-        <div className="flex items-center gap-4 pt-3 border-t border-slate-200/50">
+      {(
+        <div className="item-fields flex items-center gap-4 pt-3 border-t border-slate-200/50">
           <div className="flex-1">
             <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Preço Unit.</label>
             <input
               type="number"
-              step="0.01"
+              step="0.01" min="0" aria-label={`Preço de ${item.name}`}
               value={localPrice}
               onChange={(e) => setLocalPrice(e.target.value)}
               onBlur={() => saveField("price", localPrice)}
@@ -96,7 +99,7 @@ export default function ShoppingItemRow({
               Qtd
             </label>
             <input
-              type="number"
+              type="number" min="1" step="1" aria-label={`Quantidade de ${item.name}`}
               value={localQuantity}
               onChange={(e) => setLocalQuantity(e.target.value)}
               onBlur={() => {
@@ -116,7 +119,7 @@ export default function ShoppingItemRow({
             <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Subtotal</label>
             <p className="text-sm font-black text-slate-800">
               R${" "}
-              {((parseFloat(localPrice) || 0) * (parseInt(localQuantity) || 1)).toLocaleString("pt-PT", {
+              {((parseFloat(localPrice) || 0) * (parseInt(localQuantity) || 1)).toLocaleString("pt-BR", {
                 minimumFractionDigits: 2,
               })}
             </p>

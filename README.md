@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SmartList — visual atualizado
 
-## Getting Started
+Interface renovada para celular e computador, preservando a integração Firebase existente.
 
-First, run the development server:
+## Novidades
+- Navegação lateral entre listas em telas grandes.
+- Resumo de itens, progresso e total do carrinho.
+- Filtros Todos, Pendentes e No carrinho, com busca por nome.
+- Preço e quantidade disponíveis antes de marcar o produto.
+- Layout adaptado para telas pequenas e foco visível para teclado.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Executar
+Instale Node.js e execute nesta pasta:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+    npm install
+    npm run dev
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Abra http://localhost:3000.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Para produção:
 
-## Learn More
+    npm run build
+    npm start
 
-To learn more about Next.js, take a look at the following resources:
+## Serviços existentes
+A configuração original do Firebase está em src/lib/firebase.ts. O login anônimo e as regras do Firestore precisam permitir as operações da aplicação.
+O assistente mantém o serviço Gemini original e requer GEMINI_API_KEY em .env.local. Esse arquivo não acompanha o projeto.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Verificação
+Compilação de produção e verificação TypeScript concluídas. Prévia móvel e filtro de pendentes conferidos no navegador. Não foram alterados itens salvos durante a verificação. O assistente não foi testado, pois a chave Gemini não veio no ZIP original.
