@@ -207,20 +207,54 @@ export default function Home() {
         </div>
       )}
 
-      <aside className="app-sidebar">
-        <a className="brand" href="/" aria-label="SmartList, início"><span className="brand-icon">✓</span><span>smartlist<span className="brand-dot">.</span></span></a>
-        <div className="sidebar-caption">SEU DIA MAIS LEVE</div>
-        <button className="sidebar-heading" onClick={() => setIsManagerOpen(true)}><span>Minhas listas</span><span>＋</span></button>
-        <nav aria-label="Listas de compras" className="list-navigation">{lists.map(list => <button key={list.id} onClick={() => setCurrentListId(list.id)} className={list.id === currentListId ? 'nav-list active' : 'nav-list'}><span className="nav-list-icon">{list.isMother ? '☆' : '☷'}</span><span>{list.name}</span><small>{list.items.length}</small></button>)}</nav>
-        <button className="new-list-button" onClick={() => setIsManagerOpen(true)}>＋ Criar ou gerenciar listas</button>
-        <div className="sidebar-tip"><span>✧</span><strong>Menos esforço.<br />Mais organização.</strong><p>Use sua lista mãe como ponto de partida para a próxima compra.</p></div>
-        <div className="sidebar-footer"><span className="connection-dot" /> Conectado à sua lista</div>
-      </aside>
       <div className="workspace">
-      <div className="workspace-topbar"><span>Meu espaço <span className="breadcrumb">/ &nbsp; Lista de compras</span></span><span className="topbar-badge">Uma compra de cada vez</span></div>
+        <header className="workspace-topbar">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                const mother = lists.find((l) => l.isMother);
+                if (mother) setCurrentListId(mother.id);
+              }}
+              className="brand flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity bg-transparent border-none p-0 text-left"
+              aria-label="SmartList, ir para lista mãe"
+            >
+              <span className="brand-icon">✓</span>
+              <span>smartlist<span className="brand-dot">.</span></span>
+            </button>
+            <span className="breadcrumb hidden sm:inline">/ &nbsp; Lista de compras</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {motherList && (
+              <button
+                onClick={() => setCurrentListId(motherList.id)}
+                className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-all ${
+                  currentListId === motherList.id
+                    ? "bg-amber-100 text-amber-900 border-amber-300"
+                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                }`}
+                title="Abrir Lista Mãe"
+              >
+                ⭐ Lista Mãe
+              </button>
+            )}
+            <span className="topbar-badge hidden md:inline">Uma compra de cada vez</span>
+          </div>
+        </header>
       <div className="main-content">
         <header className="page-heading">
-          <div><p className="eyebrow">TUDO PRONTO PARA A PRÓXIMA COMPRA</p><h1>{currentList?.name || 'Minha lista'}<span className="heading-dot">.</span></h1><p className="page-subtitle">Organize o que precisa. Acompanhe o que já está no carrinho.</p></div>
+          <div>
+            <p className="eyebrow">TUDO PRONTO PARA A PRÓXIMA COMPRA</p>
+            <h1 className="flex items-center gap-2 flex-wrap">
+              <span>{currentList?.name || 'Minha lista'}</span>
+              {currentList?.isMother && (
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 tracking-normal border border-amber-200">
+                  ⭐ Lista Mãe
+                </span>
+              )}
+              <span className="heading-dot">.</span>
+            </h1>
+            <p className="page-subtitle">Organize o que precisa. Acompanhe o que já está no carrinho.</p>
+          </div>
           <div className="heading-actions"><button className="manage-button" onClick={() => setIsManagerOpen(true)}>☷ <span>Minhas listas</span></button><button className="assistant-button" onClick={() => setIsChatOpen(true)}>✧ <span>Assistente IA</span></button></div>
         </header>
         <section className="overview" aria-label="Resumo da compra">
@@ -273,7 +307,7 @@ export default function Home() {
         {currentTab === 'table' && (
           <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
             <div className="overflow-x-auto no-scrollbar">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse font-sans">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200 text-[10px] text-slate-400 uppercase font-black tracking-widest">
                     <th className="px-6 py-5">Produto</th>
@@ -286,11 +320,15 @@ export default function Home() {
                 <tbody className="divide-y divide-slate-100">
                   {sortedItems.map(item => (
                     <tr key={item.id} className={`transition-colors ${item.checked ? 'bg-emerald-50/20' : ''}`}>
-                      <td className={`px-4 py-4 text-sm font-medium ${item.checked ? 'text-slate-400 italic' : 'text-slate-800'}`}>{item.name}</td>
+                      <td className={`px-4 py-4 text-sm font-medium ${item.checked ? 'text-slate-400' : 'text-slate-800'}`}>{item.name}</td>
                       <td className="px-4 py-4 text-[10px] text-slate-400 font-bold uppercase">{item.format || '-'}</td>
-                      <td className="px-4 py-4 text-sm text-right text-slate-600 font-mono">R$ {(item.price || 0).toFixed(2)}</td>
+                      <td className="px-4 py-4 text-sm text-right text-slate-600 font-medium">
+                        R$ {(item.price || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
                       <td className="px-4 py-4 text-sm text-center text-slate-600">{item.quantity || 1}</td>
-                      <td className="px-4 py-4 text-sm font-bold text-right text-slate-900 font-mono">R$ {((item.price || 0) * (item.quantity || 1)).toFixed(2)}</td>
+                      <td className="px-4 py-4 text-sm font-bold text-right text-slate-900">
+                        R$ {((item.price || 0) * (item.quantity || 1)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -386,7 +424,7 @@ export default function Home() {
         <div className="fixed inset-0 z-[60] modal-overlay flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) setIsMotherOpen(false); }}>
           <div className="bg-white w-full max-w-md rounded-[3rem] p-8 shadow-2xl animate-slide-in">
             <h2 className="text-2xl font-black text-slate-800 mb-2">Importar Itens</h2>
-            <p className="text-slate-400 font-medium text-sm mb-4 italic">Selecione referências da sua Lista Mãe:</p>
+            <p className="text-slate-400 font-medium text-sm mb-4">Selecione referências da sua Lista Mãe:</p>
             
             <input 
               type="text" 

@@ -57,8 +57,9 @@ export function useShoppingLists() {
         createNewList("Minha Primeira Lista", true);
       } else {
         setCurrentListId((prev) => {
-          if (!prev || !fetchedLists.find(l => l.id === prev)) {
-            return fetchedLists[0].id;
+          if (!prev || !fetchedLists.find((l) => l.id === prev)) {
+            const motherList = fetchedLists.find((l) => l.isMother);
+            return motherList ? motherList.id : fetchedLists[0].id;
           }
           return prev;
         });

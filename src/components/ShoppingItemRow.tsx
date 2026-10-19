@@ -16,9 +16,18 @@ export default function ShoppingItemRow({
   handleUpdateField,
   handleRemoveItem,
 }: ShoppingItemRowProps) {
-  // Local state for inputs to prevent cursor issues and focus jumps
+  // Auxiliar para formatar centavos para o padrão "0,00"
+  const formatCentsToBRL = (cents: number): string => {
+    return (cents / 100).toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
+  const initialCents = Math.round((typeof item.price === "number" ? item.price : 0) * 100);
   const [localFormat, setLocalFormat] = useState(item.format || "");
-  const [localPrice, setLocalPrice] = useState(item.price !== undefined ? item.price.toString() : "0");
+  const [centsValue, setCentsValue] = useState(initialCents);
+  const [displayPrice, setDisplayPrice] = useState(formatCentsToBRL(initialCents));
   const [localQuantity, setLocalQuantity] = useState(item.quantity !== undefined ? item.quantity.toString() : "1");
 
   // Keep local state in sync when item changes from DB (e.g. initial load or other users/devices)
@@ -27,7 +36,9 @@ export default function ShoppingItemRow({
   }, [item.format]);
 
   useEffect(() => {
-    setLocalPrice(item.price !== undefined ? item.price.toString() : "0");
+    const nextCents = Math.round((typeof item.price === "number" ? item.price : 0) * 100);
+    setCentsValue(nextCents);
+    setDisplayPrice(formatCentsToBRL(nextCents));
   }, [item.price]);
 
   useEffect(() => {
@@ -38,6 +49,23 @@ export default function ShoppingItemRow({
   const saveField = (field: string, value: string) => {
     handleUpdateField(item.id, field, value);
   };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawDigits = e.target.value.replace(/\D/g, "");
+    // Limita para evitar números excessivos (até 8 dígitos = 999.999,99)
+    const limitedDigits = rawDigits.slice(0, 8);
+    const newCents = limitedDigits === "" ? 0 : parseInt(limitedDigits, 10);
+    setCentsValue(newCents);
+    setDisplayPrice(formatCentsToBRL(newCents));
+  };
+
+  const handlePriceBlur = () => {
+    saveField("price", (centsValue / 100).toString());
+  };
+
+  const currentPrice = centsValue / 100;
+  const currentQuantity = parseInt(localQuantity) || 1;
+  const currentSubtotal = currentPrice * currentQuantity;
 
   return (
     <div
@@ -81,51 +109,56 @@ export default function ShoppingItemRow({
           </svg>
         </button>
       </div>
-      {(
-        <div className="item-fields flex items-center gap-4 pt-3 border-t border-slate-200/50">
-          <div className="flex-1">
-            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Preço Unit.</label>
+      <div className="item-fields flex items-center gap-4 pt-3 border-t border-slate-200/50">
+        <div className="flex-1">
+          <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Preço Unit.</label>
+          <div className="relative flex items-center">
+            <span className="absolute left-2.5 text-xs font-semibold text-slate-400 pointer-events-none select-none">R$</span>
             <input
-              type="number"
-              step="0.01" min="0" aria-label={`Preço de ${item.name}`}
-              value={localPrice}
-              onChange={(e) => setLocalPrice(e.target.value)}
-              onBlur={() => saveField("price", localPrice)}
-              className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-sm outline-none focus:border-emerald-400"
-            />
-          </div>
-          <div className="w-20">
-            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter text-center block">
-              Qtd
-            </label>
-            <input
-              type="number" min="1" step="1" aria-label={`Quantidade de ${item.name}`}
-              value={localQuantity}
-              onChange={(e) => setLocalQuantity(e.target.value)}
-              onBlur={() => {
-                // If user leaves it blank or invalid, reset to 1, otherwise save parsed int
-                const parsed = parseInt(localQuantity);
-                if (isNaN(parsed) || parsed < 1) {
-                  setLocalQuantity("1");
-                  saveField("quantity", "1");
-                } else {
-                  saveField("quantity", localQuantity);
-                }
+              type="text"
+              inputMode="numeric"
+              aria-label={`Preço de ${item.name}`}
+              value={displayPrice}
+              onChange={handlePriceChange}
+              onBlur={handlePriceBlur}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") (e.target as HTMLInputElement).blur();
               }}
-              className="w-full bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-sm text-center outline-none focus:border-emerald-400"
+              placeholder="0,00"
+              className="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-2.5 py-1.5 text-sm font-medium outline-none focus:border-emerald-400"
             />
-          </div>
-          <div className="text-right min-w-[80px]">
-            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Subtotal</label>
-            <p className="text-sm font-black text-slate-800">
-              R${" "}
-              {((parseFloat(localPrice) || 0) * (parseInt(localQuantity) || 1)).toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-              })}
-            </p>
           </div>
         </div>
-      )}
+        <div className="w-20">
+          <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter text-center block">
+            Qtd
+          </label>
+          <input
+            type="number" min="1" step="1" aria-label={`Quantidade de ${item.name}`}
+            value={localQuantity}
+            onChange={(e) => setLocalQuantity(e.target.value)}
+            onBlur={() => {
+              const parsed = parseInt(localQuantity);
+              if (isNaN(parsed) || parsed < 1) {
+                setLocalQuantity("1");
+                saveField("quantity", "1");
+              } else {
+                saveField("quantity", localQuantity);
+              }
+            }}
+            className="w-full bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-sm text-center outline-none focus:border-emerald-400"
+          />
+        </div>
+        <div className="text-right min-w-[80px]">
+          <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Subtotal</label>
+          <p className="text-sm font-black text-slate-800">
+            R$ {currentSubtotal.toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
