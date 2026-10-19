@@ -112,8 +112,8 @@ export default function ShoppingItemRow({
       <div className="item-fields flex items-center gap-4 pt-3 border-t border-slate-200/50">
         <div className="flex-1">
           <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Preço Unit.</label>
-          <div className="relative flex items-center">
-            <span className="absolute left-2.5 text-xs font-semibold text-slate-400 pointer-events-none select-none">R$</span>
+          <div className="price-input-wrapper">
+            <span className="price-input-prefix">R$</span>
             <input
               type="text"
               inputMode="numeric"
@@ -125,7 +125,6 @@ export default function ShoppingItemRow({
                 if (e.key === "Enter") (e.target as HTMLInputElement).blur();
               }}
               placeholder="0,00"
-              className="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-2.5 py-1.5 text-sm font-medium outline-none focus:border-emerald-400"
             />
           </div>
         </div>

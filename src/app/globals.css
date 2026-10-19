@@ -121,8 +121,13 @@ h1 { font-size: clamp(26px, 3vw, 36px); line-height: 1.25; font-weight: 750; let
 .item-card > div:first-child > button:first-child { width: 23px; height: 23px; flex-shrink: 0; border-radius: 7px; border-width: 1.5px; }
 .item-card.is-checked > div:first-child > button:first-child { background: #62865c; border-color: #62865c; }
 .item-fields { padding: 0; border: 0; gap: 12px; }
-.item-fields label { color: #97a08d; font-size: 8px; font-weight: 500; letter-spacing: .4px; }
-.item-fields input { font-size: 12px; background: #fafbf7; border-color: #e7ecdf; border-radius: 6px; padding: 7px; }
+.item-fields label { color: #97a08d; font-size: 8px; font-weight: 500; letter-spacing: .4px; display: block; margin-bottom: 2px; }
+.item-fields input { font-size: 12px; background: #fafbf7; border: 1px solid #e7ecdf; border-radius: 6px; padding: 7px 8px; }
+.item-fields input:focus { outline: 2px solid #81ac97; outline-offset: 1px; border-color: #2e6048; background: #fff; }
+.price-input-wrapper { display: flex; align-items: center; background: #fafbf7; border: 1px solid #e7ecdf; border-radius: 6px; padding: 0 8px; transition: all .18s; }
+.price-input-wrapper:focus-within { border-color: #2e6048; background: #fff; outline: 2px solid #81ac97; outline-offset: 1px; }
+.price-input-prefix { font-size: 11px; font-weight: 700; color: #94a3b8; margin-right: 4px; user-select: none; flex-shrink: 0; line-height: 1; }
+.price-input-wrapper input { border: none !important; background: transparent !important; outline: none !important; box-shadow: none !important; padding: 7px 0 !important; width: 100% !important; font-size: 12px !important; font-weight: 600 !important; color: #1e293b !important; }
 .item-fields > div:nth-child(2) { width: 52px; }
 .item-fields > div:last-child { min-width: 78px; }
 .item-fields p { font-size: 12px; font-weight: 650; }

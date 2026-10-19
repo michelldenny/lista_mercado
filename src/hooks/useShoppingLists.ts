@@ -51,6 +51,8 @@ export function useShoppingLists() {
     const listsCollection = collection(db, "artifacts", APP_ID, "public", "data", "shoppingLists");
     const unsubscribe = onSnapshot(listsCollection, (snapshot) => {
       const fetchedLists = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as ShoppingList));
+      // Ordena por data de criação: do mais atual para o mais antigo
+      fetchedLists.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       setLists(fetchedLists);
       
       if (fetchedLists.length === 0) {
